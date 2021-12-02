@@ -1,39 +1,3 @@
-local function DefineSimfForward(vehicle)
-	--get the vehicles list and if it has custom wheels
-	local vehlist = list.Get( "simfphys_vehicles" )[ vehicle:GetSpawn_List() ]
-	local CustomWheels = vehlist.Members.CustomWheels
-	--create a table with all the wheel locations, determines if custom wheel or attachment locations are needed
-	local WheelTable = {}
-	WheelTable.FL = CustomWheels and vehicle:LocalToWorld( vehlist.Members.CustomWheelPosFL ) or vehicle:GetAttachment( vehicle:LookupAttachment( "wheel_fl" ) ).Pos
-	WheelTable.FR = CustomWheels and vehicle:LocalToWorld( vehlist.Members.CustomWheelPosFR ) or vehicle:GetAttachment( vehicle:LookupAttachment( "wheel_fr" ) ).Pos
-	WheelTable.RL = CustomWheels and vehicle:LocalToWorld( vehlist.Members.CustomWheelPosRL ) or vehicle:GetAttachment( vehicle:LookupAttachment( "wheel_rl" ) ).Pos
-	WheelTable.RR = CustomWheels and vehicle:LocalToWorld( vehlist.Members.CustomWheelPosRR ) or vehicle:GetAttachment( vehicle:LookupAttachment( "wheel_rr" ) ).Pos
-
-	--find the local forward direction based on wheel location to angles
-	local pAngL = vehicle:WorldToLocalAngles( ((WheelTable.FL + WheelTable.FR) / 2 - (WheelTable.RL + WheelTable.RR) / 2):Angle() )
-	pAngL.r = 0
-	pAngL.p = 0
-
-	--save the local forward direction
-	vehicle.forward = pAngL
-
-	--find the right direction from the forward direction
-	local yAngL = pAngL - Angle(0,90,0)
-	yAngL:Normalize()
-
-	--save the right local direction
-	vehicle.right = yAngL
-end
-
-local function FindForward(vehicle)
-	if !vehicle.forward then DefineSimfForward(vehicle) end
-	return vehicle:LocalToWorldAngles( vehicle.forward ):Forward()
-end
-local function FindRight(vehicle)
-	if !vehicle.forward then DefineSimfForward(vehicle) end
-	return vehicle:LocalToWorldAngles( vehicle.right ):Forward()
-end
-
 local Cam = {}
 Cam.Name = "Cinematic"
 
@@ -57,8 +21,8 @@ Cam.CamFuncs[1] = function(self, ply, view, vehicle, change)
 		self.CamChangeDel = CurTime() + math.random(1,3)
 	end
 
-	view.origin = ply:EyePos() + FindForward(vehicle) * 80 + vehicle:GetUp() * 9
-	view.angles = FindForward(vehicle) * -1
+	view.origin = ply:EyePos() + SimfCamManager.FindForward(vehicle) * 80 + vehicle:GetUp() * 9
+	view.angles = SimfCamManager.FindForward(vehicle) * -1
 	view.angles = view.angles:Angle()
 	return view
 end
@@ -102,7 +66,7 @@ end
 Cam.CamFuncs[3] = function(self, ply, view, vehicle, change)	
 
 	if change then
-		self.LookPos = vehicle:GetPos() + FindForward(vehicle) * 500 + Vector( math.random(-50,50) ,math.random(-50,50),math.random(-50,50) )
+		self.LookPos = vehicle:GetPos() + SimfCamManager.FindForward(vehicle) * 500 + Vector( math.random(-50,50) ,math.random(-50,50),math.random(-50,50) )
 
 		local tr = util.TraceLine({
 			start = vehicle:GetPos(),
@@ -173,8 +137,8 @@ Cam.CamFuncs[5] = function(self, ply, view, vehicle, change)
 		self.CamChangeDel = CurTime() + math.random(3,5)
 	end
 
-	view.origin = vehicle:LocalToWorld(self.LookPos) + FindForward(vehicle) * -50 + FindRight(vehicle) * -20
-	view.angles = FindForward(vehicle):Angle()
+	view.origin = vehicle:LocalToWorld(self.LookPos) + SimfCamManager.FindForward(vehicle) * -50 + SimfCamManager.FindRight(vehicle) * -20
+	view.angles = SimfCamManager.FindForward(vehicle):Angle()
 	return view
 end
 
@@ -201,7 +165,7 @@ Cam.CamFuncs[6] = function(self, ply, view, vehicle, change)
 	end
 
 	view.origin = vehicle:LocalToWorld(self.LookPos)
-	view.angles = FindForward(vehicle)
+	view.angles = SimfCamManager.FindForward(vehicle)
 	view.angles = view.angles:Angle()
 	return view
 end
@@ -229,7 +193,7 @@ Cam.CamFuncs[7] = function( self, ply, view, vehicle, change)
 	end
 
 	view.origin = vehicle:LocalToWorld(self.LookPos)
-	view.angles = FindForward(vehicle) * -1
+	view.angles = SimfCamManager.FindForward(vehicle) * -1
 	view.angles = view.angles:Angle()
 	return view
 end

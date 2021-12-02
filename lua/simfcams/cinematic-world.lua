@@ -51,7 +51,7 @@ end
 Cam.CamFuncs[2] = function(self, ply, view, vehicle, change)	
 
 	if change then
-		self.LookPos = vehicle:GetPos() + FindForward(vehicle) * 500 + Vector( math.random(-50,50) ,math.random(-50,50),math.random(-50,50) )
+		self.LookPos = vehicle:GetPos() + SimfCamManager.FindForward(vehicle) * 500 + Vector( math.random(-50,50) ,math.random(-50,50),math.random(-50,50) )
 
 		local tr = util.TraceLine({
 			start = vehicle:GetPos(),
